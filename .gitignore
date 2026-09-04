@@ -1,0 +1,43 @@
+# --- Variáveis de ambiente e segredos ---
+.env
+.env.*
+*.env
+config.json
+secrets.json
+credentials.json
+*.pem
+*.key
+*.crt
+*.pfx
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+
+# --- Logs e dados locais ---
+*.log
+*.sqlite3
+*.db
+
+# --- Configurações de IDE/editor ---
+.vscode/
+.idea/
+*.swp
+
+# --- Sistema operacional ---
+Thumbs.db
+.DS_Store
+
+# --- Arquivos de backup ---
+*.bak
+*.tmp
