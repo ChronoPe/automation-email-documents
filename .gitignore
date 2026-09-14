@@ -41,3 +41,7 @@ Thumbs.db
 # --- Arquivos de backup ---
 *.bak
 *.tmp
+
+# --- documentos ---
+
+*.png

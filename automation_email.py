@@ -12,6 +12,8 @@ import pandas as pd
 
 MODO_TESTE = False
 
+CAMINHO_ASSINATURA = Path(__file__).parent / "assinatura.png"
+
 
 COLUNAS_ORIGINAIS = {
     "id_vendedor": "id_vendedor",
@@ -108,25 +110,20 @@ def listar_pdfs(pasta_entrada: str) -> list[Path]:
 
     return sorted(pdfs)
 
-def extrair_codigo_cliente_boleto(nome_arquivo: str):
+def extrair_codigo_cliente(nome_arquivo: str):
     nome_sem_extensao = Path(nome_arquivo).stem.strip()
 
-    resultado = re.search(r"^(\d{6})", nome_sem_extensao)
+    resultado = re.match(r"^(\d{6})", nome_sem_extensao)
 
-    if resultado is None:
-        return None
+    if resultado is not None:
+        return resultado.group(1)
 
-    return resultado.group(1)
+    resultado = re.search(r"(\d{6})\s*(?:\(\d+\))?$", nome_sem_extensao)
 
-def extrair_codigo_cliente_nf_dev(nome_arquivo: str):
-    nome_sem_extensao = Path(nome_arquivo).stem.strip()
+    if resultado is not None:
+        return resultado.group(1)
 
-    resultado = re.search(r"(\d{6})$", nome_sem_extensao)
-
-    if resultado is None:
-        return None
-
-    return resultado.group(1)
+    return None
 
 def pedir_email_cliente(codigo_cliente: str) -> str:
     while True:
@@ -166,6 +163,33 @@ def montar_mensagem(
         "Atenciosamente."
     )
 
+    mensagem.add_alternative(
+        f"""\
+<html>
+  <body>
+    <p>Olá,</p>
+    <p>Segue em anexo o(s) boleto(s) e documento(s) relacionado(s).</p>
+    <p>Atenciosamente.</p>
+    <p><img src="cid:assinatura" alt="Assinatura" style="max-width:350px;"></p>
+  </body>
+</html>
+""",
+        subtype="html",
+    )
+
+    if CAMINHO_ASSINATURA.is_file():
+        with open(CAMINHO_ASSINATURA, "rb") as imagem:
+            mensagem.get_payload()[-1].add_related(
+                imagem.read(),
+                maintype="image",
+                subtype="png",
+                cid="<assinatura>",
+            )
+    else:
+        print(
+            f"[AVISO] Imagem de assinatura não encontrada em: {CAMINHO_ASSINATURA}"
+        )
+
     for arquivo in arquivos:
         with open(arquivo, "rb") as pdf:
             mensagem.add_attachment(
@@ -198,12 +222,14 @@ if __name__ == "__main__":
     for pdf in pdfs:
         nome = pdf.name
 
-        if nome.upper().startswith("NF DE DEV"):
-            codigo_cliente = extrair_codigo_cliente_nf_dev(nome)
+        nome_maiusculo = nome.upper()
+
+        if nome_maiusculo.startswith("NF DE DEV") or nome_maiusculo.startswith("NF CL"):
             tipo_arquivo = "nf_dev"
         else:
-            codigo_cliente = extrair_codigo_cliente_boleto(nome)
             tipo_arquivo = "boleto"
+
+        codigo_cliente = extrair_codigo_cliente(nome)
 
         if codigo_cliente is None:
             print(f"[SEM CÓDIGO DE CLIENTE] {nome}")
@@ -229,10 +255,9 @@ if __name__ == "__main__":
         vendedor = buscar_vendedor_por_id(contatos, id_vendedor)
 
         if not grupo["boletos"]:
-            print(f"[NF DEV SEM BOLETO] Cliente: {codigo_cliente}")
+            print(f"[SEM BOLETO - envio será feito só com NF] Cliente: {codigo_cliente}")
             for nf_dev in grupo["nfs_dev"]:
                 print(f"  {nf_dev.name}")
-            continue
 
         if vendedor is None:
             print(
