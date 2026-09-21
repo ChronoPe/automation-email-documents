@@ -153,8 +153,12 @@ def montar_mensagem(
     mensagem["To"] = email_cliente
     mensagem["Cc"] = (
         f"{vendedor['email_vendedor']}, "
-        f"{vendedor['email_supervisor']}"
+        f"{vendedor['email_supervisor']}, "
+        "cobranca1@nogmix.com.br, "
+        "jovemaprendiz2@nogmix.com.br, "
+        "marisangela@nogmix.com.br"
     )
+    
     mensagem["Subject"] = "Boletos e nota fiscal de devolução"
 
     mensagem.set_content(

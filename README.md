@@ -6,11 +6,35 @@ Script Python que lê uma base de vendedores (Excel), varre uma pasta de PDFs (b
 
 - Python 3
 - Biblioteca `pandas` (e `openpyxl`, usada internamente pelo pandas para ler `.xlsx`)
+- Para o front-end (`frontend_boletos.py`): `customtkinter`
 
 Instalação:
 ```
-pip install pandas openpyxl
+pip install pandas openpyxl customtkinter
 ```
+
+## Front-end (interface gráfica)
+
+`frontend_boletos.py` é uma interface gráfica (CustomTkinter) que roda por cima do
+`automation_email.py` sem alterá-lo — importa e reutiliza as mesmas funções de
+leitura da base, listagem de PDFs, busca de vendedor, montagem e envio de e-mail.
+
+Para abrir:
+```
+python frontend_boletos.py
+```
+
+A interface tem 3 abas, na ordem do fluxo:
+
+1. **Configuração**: escolher o Excel da base, a pasta com os PDFs, informar
+   e-mail/senha do remetente e (opcional) marcar "Modo teste". Botão
+   "Processar base e PDFs" lê tudo e agrupa os arquivos por cliente.
+2. **Revisão**: mostra um resumo (PDFs encontrados, clientes válidos, sem código de
+   cliente, vendedor não encontrado) e uma lista com um campo de e-mail por cliente
+   válido, que precisa ser preenchido e validado antes de avançar. Clientes com NF de
+   devolução mas sem boleto aparecem marcados com ⚠.
+3. **Envio**: mostra quantos e-mails serão enviados, um log em tempo real e uma barra
+   de progresso. Em modo teste, nada é enviado de verdade — só é simulado no log.
 
 ## Arquivo de entrada: base Excel
 
@@ -80,6 +104,25 @@ No topo do script:
 MODO_TESTE = False
 ```
 Se `MODO_TESTE = True`, o script executa todo o fluxo (leitura, agrupamento, coleta de e-mails), mas **não abre conexão SMTP nem envia nada** — só imprime no console o que seria enviado para cada cliente.
+
+## Gerando o executável (.exe) para distribuir
+
+Para gerar um único arquivo `.exe` do front-end (`frontend_boletos.py`), que roda em
+qualquer Windows sem precisar instalar Python nem as dependências:
+
+```
+pip install pyinstaller
+python -m PyInstaller --noconfirm --onefile --windowed --name "EnvioBoletos" --add-data "assinatura.png;." frontend_boletos.py
+```
+
+O executável final fica em `dist/EnvioBoletos.exe`. Basta copiar esse arquivo para o
+computador de quem vai usar — não precisa levar mais nada (a imagem de assinatura já
+fica embutida dentro do `.exe`). Ao compartilhar, inclua também um passo a passo de uso
+(veja o arquivo de instruções entregue junto com o executável), já que quem for usar não
+tem contato com este repositório.
+
+Pastas geradas por esse processo (`build/`, `dist/`, `*.spec`) não são versionadas (veja
+`.gitignore`).
 
 ## Erros conhecidos
 
