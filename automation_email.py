@@ -69,7 +69,6 @@ def mostrar_resumo(base: pd.DataFrame) -> None:
     contatos = ler_base_arquivo(Path(sys.argv[1]))
     mostrar_resumo(contatos)
 
-#--------------------------- 02º parte
 
 def buscar_vendedor_por_id(base: pd.DataFrame, id_vendedor: str):
     id_procurado = str(id_vendedor).strip()
@@ -84,7 +83,6 @@ def buscar_vendedor_por_id(base: pd.DataFrame, id_vendedor: str):
 
     return resultado.iloc[0]
 
-#--------------------------- 03º parte
 
 def extrair_id_vendedor(nome_arquivo: str):
     nome_sem_extensao = Path(nome_arquivo).stem.strip()
@@ -149,14 +147,12 @@ def montar_mensagem(
 ) -> EmailMessage:
     mensagem = EmailMessage()
 
+    # Modifique da forma que precisar incluindo quem for necessário.
     mensagem["From"] = email_remetente
     mensagem["To"] = email_cliente
     mensagem["Cc"] = (
         f"{vendedor['email_vendedor']}, "
         f"{vendedor['email_supervisor']}, "
-        "cobranca1@nogmix.com.br, "
-        "jovemaprendiz2@nogmix.com.br, "
-        "marisangela@nogmix.com.br"
     )
     
     mensagem["Subject"] = "Boletos e nota fiscal de devolução"
